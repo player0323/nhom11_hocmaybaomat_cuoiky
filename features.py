@@ -13,7 +13,6 @@ import csv
 TRANCO_CSV_PATH = 'final_whitelist.csv'
 SAFE_DOMAINS_SET = set()
 
-# CH? DÙNG LIST NÀY Ð? CHECK GI? M?O (B? CSV TARGETS)
 SENSITIVE_BRANDS = [
     'facebook', 'google', 'youtube', 'amazon', 'apple', 'paypal', 'microsoft', 'instagram', 'netflix', 'whatsapp',
     'twitter', 'linkedin', 'dropbox', 'ebay', 'binance', 'coinbase', 'blockchain',
@@ -40,10 +39,8 @@ def load_tranco_list():
                 for line in f:
                     clean_domain = line.strip()
                     if clean_domain:
-                        # CH? DÙNG CSV Ð? LÀM WHITELIST
+                        #  WHITELIST
                         SAFE_DOMAINS_SET.add(clean_domain)
-                        
-                        # [DA XOA] KHONG LAY TOP 1000 LAM TARGET NUA -> GAY NHIEU
                         
             print(f"[INIT] Da load {len(SAFE_DOMAINS_SET)} Whitelist. Typosquatting chi check {len(SENSITIVE_BRANDS)} Brand cung.")
         except Exception as e: print(f"[LOI] {e}")
@@ -97,7 +94,7 @@ def check_shortener(full_domain):
     return 0
 
 # =============================================================================
-# HAM CHECK LOGIC (SIET CHAT - 100% RISK)
+# HAM CHECK LOGIC 
 # =============================================================================
 def check_status_logic(domain_body, full_domain, clean_url):
     is_white = 0
@@ -116,7 +113,7 @@ def check_status_logic(domain_body, full_domain, clean_url):
             return 1, 0, None
     except: pass
 
-    # 2. Typosquatting (CHI CHECK VOI SENSITIVE_BRANDS)
+    # 2. Typosquatting (SENSITIVE_BRANDS)
     try:
         raw_body = extract_visual_body(clean_url)
         decoded_part = normalize_leet_speak(raw_body)
@@ -133,7 +130,6 @@ def check_status_logic(domain_body, full_domain, clean_url):
                 if len(brand) < 4: continue
                 return 0, 1, f"Gia mao '{brand}' (Levenshtein: {dist})"
             
-            # [DA XOA] Logic "Chua tu khoa" gay nhieu
     except: pass
     
     return 0, 0, None

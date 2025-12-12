@@ -1,4 +1,7 @@
-﻿final_dataset_raw.csv : bộ dữ liệu thô (149k begin + phishing)
+﻿https://github.com/player0323/nhom11_hocmaybaomat_cuoiky.git
+
+
+final_dataset_raw.csv : bộ dữ liệu thô (149k begin + phishing)
 features.py : logic đặc trưng
 extract_feature_csv.py : trích xuất đặc trưng để huấn luyện
 train_model_final.py: huấn luyện mô hình

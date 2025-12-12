@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 from flask import Flask, request, render_template
 import numpy as np
 import joblib
@@ -17,12 +17,12 @@ try:
     model_svm = joblib.load("model_svm.pkl")
 except Exception as e:
     print(f"[LOI NGHIEM TRONG] Khong the tai model: {e}")
-    # exit() hoac xu ly tuy y
 
+# [UPDATE 1] Doi ten key thanh ten day du
 models = {
-    "LR": model_lr,
-    "RF": model_rf,
-    "SVM": model_svm
+    "Logistic Regression": model_lr,
+    "Random Forest": model_rf,
+    "Support Vector Machine": model_svm
 }
 
 # =================== MAIN ROUTE =======================
@@ -40,38 +40,57 @@ def index():
             arr = np.array(features).reshape(1, -1) # Shape (1, 30)
 
             # 2. Du doan qua cac model
-            scores = {}
+            scores = [] # Dung list de luu chi tiet tung model
+            probs_for_avg = []
+
             for name, model in models.items():
-                # Pipeline da bao gom buoc Scaler ben trong, nen dua arr tho vao
-                prob = model.predict_proba(arr)[0][1] 
-                scores[name] = float(prob)
+                # Lay xac suat la DOC HAI (Class 1)
+                prob_phishing = model.predict_proba(arr)[0][1]
+                probs_for_avg.append(prob_phishing)
+                
+                # [UPDATE 2] Xu ly % theo chieu thuan
+                if prob_phishing > 0.5:
+                    label = "Độc hại"
+                    confidence = prob_phishing * 100
+                    color = "text-danger"
+                else:
+                    label = "An toàn"
+                    confidence = (1 - prob_phishing) * 100
+                    color = "text-success"
 
-            # Tinh diem trung binh
-            final_score = np.mean(list(scores.values()))
+                scores.append({
+                    "name": name,
+                    "prob": confidence,
+                    "label": label,
+                    "color": color
+                })
 
-            # 3. Ket luan
-            if final_score > 0.5:
-                status = "DOC HAI (PHISHING)"
+            # Tinh diem trung binh (dua tren xac suat doc hai)
+            final_score_phishing = np.mean(probs_for_avg)
+
+            # 3. Ket luan tong the
+            if final_score_phishing > 0.5:
+                status = "ĐỘC HẠI (PHISHING)"
                 css_class = "danger"
-                confidence = final_score * 100
+                confidence_total = final_score_phishing * 100
             else:
-                status = "AN TOAN (BENIGN)"
+                status = "AN TOÀN (BENIGN)"
                 css_class = "success"
-                confidence = (1 - final_score) * 100
+                confidence_total = (1 - final_score_phishing) * 100
 
             # 4. Thong tin chi tiet
             details = {
                 "Tuoi Domain": features[27] if len(features) > 27 else "NA",
                 "Tuoi SSL": features[28] if len(features) > 28 else "NA",
-                "Whitelist": "Co" if extra_info.get("is_whitelisted") == 1 else "Khong",
-                "Typosquatting": extra_info.get("typo_msg", "Khong")
+                "Whitelist": "Có" if extra_info.get("is_whitelisted") == 1 else "Không",
+                "Typosquatting": extra_info.get("typo_msg", "Không")
             }
 
             result = {
                 "status": status,
                 "css_class": css_class,
-                "confidence": f"{confidence:.2f}%",
-                "scores": scores,
+                "confidence": f"{confidence_total:.2f}%",
+                "model_details": scores, # Gui danh sach chi tiet da xu ly
                 "details": details
             }
 

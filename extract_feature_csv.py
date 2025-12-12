@@ -5,9 +5,9 @@ import sys
 import os
 import numpy as np
 
-# INPUT: File d? li?u g?c ch?a URL và nhãn (label)
+# INPUT:  URL và nhãn (label)
 INPUT_FILE = 'FINAL_DATASET_MERGED_COMPLETE.csv' 
-# OUTPUT: File s?ch dùng d? train model
+# OUTPUT: File train model
 OUTPUT_FILE = 'TRAINING_DATASET_FINAL.csv'
 
 def main():
@@ -36,14 +36,13 @@ def main():
         static_features, _ = features.extract_url_static_features_extended(url)
         
         # 2. Dynamic Features (Lay tu CSV goc hoac gan gia tri mac dinh)
-        # Luu y: Trong file goc phai co cot domain_age/ssl_age, neu khong thi gan -1
         domain_age = row.get('domain_age', -1)
         ssl_age = row.get('ssl_age', -1)
         
         if pd.isna(domain_age): domain_age = -1
         if pd.isna(ssl_age): ssl_age = -1
         
-        # 3. Logic Combo (Logic giong het app_feature_extractor.py)
+        # 3. Logic Combo
         suspicious_age_combo = 0
         domain_bad = (domain_age <= -1) or (0 <= domain_age < 365)
         ssl_bad = (ssl_age <= -1) or (0 <= ssl_age < 30)
@@ -63,7 +62,7 @@ def main():
         if (index + 1) % 1000 == 0: 
             print(f" -> Da xu ly: {index + 1}/{total} dong...")
 
-    # --- DANH SACH TEN COT (PHAI KHOP 100% VOI features.py) ---
+    # --- DANH SACH TEN COT---
     # Thu tu nay duoc anh xa tu ham extract_url_static_features_extended
     cols = [
         # 1. Do dai (6)
@@ -89,7 +88,7 @@ def main():
     df_final.fillna(0, inplace=True)
     
     df_final.to_csv(OUTPUT_FILE, index=False)
-    print(f"[XONG] Da tao dataset moi. Hay chay train_model_final.py ngay!")
+    print(f"[XONG] Da tao dataset moi.!")
 
 if __name__ == "__main__":
     main()
