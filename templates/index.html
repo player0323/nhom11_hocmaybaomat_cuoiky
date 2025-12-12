@@ -1,1 +1,122 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing URL Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; padding-top: 50px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 900px; }
+        .card-main { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px; }
+        .result-box { margin-top: 30px; padding: 30px; border-radius: 12px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .success { color: #198754; }
+        .danger { color: #dc3545; }
+        
+        .score-card { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #6c757d; height: 100%; transition: transform 0.2s; }
+        .score-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        .feature-box { padding: 15px; border-radius: 8px; background-color: #eef2f7; text-align: center; height: 100%; }
+        .feature-title { font-size: 0.9rem; color: #6c757d; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .feature-value { font-size: 1.2rem; font-weight: bold; color: #212529; }
+        
+        .btn-primary { background-color: #0d6efd; padding: 10px 20px; font-weight: 600; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h2 class="text-center mb-4 text-primary fw-bold">HỆ THỐNG PHÁT HIỆN URL LỪA ĐẢO</h2>
+    
+    <div class="card card-main p-4 bg-white">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="url" class="form-label fw-bold">Nhập đường dẫn (URL) cần kiểm tra:</label>
+                <input type="text" class="form-control form-control-lg" id="url" name="url" placeholder="Ví dụ: http://paypal-secure.com..." value="{{ url }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm">🔍 Kiểm Tra Ngay</button>
+        </form>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger mt-3 shadow-sm">
+        <strong>⚠️ Lỗi hệ thống:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if result %}
+    <div class="result-box">
+        <div class="text-center mb-4">
+            <h5 class="text-muted">Kết quả tổng hợp</h5>
+            <h1 class="display-5 fw-bold {{ 'text-danger' if result.css_class == 'danger' else 'text-success' }}">
+                {{ result.status }}
+            </h1>
+            <p class="fs-5">Độ tin cậy: <span class="badge {{ 'bg-danger' if result.css_class == 'danger' else 'bg-success' }} fs-6">{{ result.confidence }}</span></p>
+        </div>
+        
+        <hr class="my-4">
+        
+        <h5 class="mb-3 fw-bold text-secondary">📊 Đánh giá từ các mô hình AI:</h5>
+        <div class="row g-3">
+            {% for item in result.model_details %}
+            <div class="col-md-4">
+                <div class="score-card" style="border-left-color: {{ '#dc3545' if item.label == 'Độc hại' else '#198754' }};">
+                    <div class="fw-bold text-dark">{{ item.name }}</div>
+                    <div class="mt-2">
+                        <span class="{{ item.color }} fw-bold fs-5">{{ "%.2f"|format(item.prob) }}%</span>
+                        <br>
+                        <small class="text-muted">Dự đoán: {{ item.label }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <hr class="my-4">
+
+        <h5 class="mb-3 fw-bold text-secondary">🛠️ Phân tích đặc trưng kỹ thuật:</h5>
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="feature-box">
+                    <div class="feature-title">Tuổi Domain</div>
+                    <div class="feature-value {{ 'text-danger' if result.details['Tuoi Domain'] != 'NA' and result.details['Tuoi Domain']|int < 180 else 'text-success' }}">
+                        {{ result.details['Tuoi Domain'] }} <small class="fs-6 fw-normal text-muted">ngày</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-box">
+                    <div class="feature-title">Tuổi SSL</div>
+                    <div class="feature-value {{ 'text-danger' if result.details['Tuoi SSL'] != 'NA' and result.details['Tuoi SSL']|int < 30 else 'text-success' }}">
+                        {{ result.details['Tuoi SSL'] }} <small class="fs-6 fw-normal text-muted">ngày</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-box">
+                    <div class="feature-title">Danh Sách Sạch</div>
+                    <div class="feature-value {{ 'text-success' if result.details['Whitelist'] == 'Có' else 'text-secondary' }}">
+                        {{ result.details['Whitelist'] }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-box">
+                    <div class="feature-title">Giả Mạo (Typosquatting)</div>
+                    <div class="feature-value {{ 'text-danger' if result.details['Typosquatting'] != 'Không' else 'text-success' }}" style="font-size: 1rem;">
+                        {{ result.details['Typosquatting'] }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+    
+    <div class="text-center mt-4 text-muted small">
+        <p>Đồ án Học Máy Bảo Mật - Nhóm 11</p>
+    </div>
+</div>
+
+</body>
+</html>
