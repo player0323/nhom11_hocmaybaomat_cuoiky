@@ -18,7 +18,7 @@ try:
 except Exception as e:
     print(f"[LOI NGHIEM TRONG] Khong the tai model: {e}")
 
-# [UPDATE 1] Doi ten key thanh ten day du
+
 models = {
     "Logistic Regression": model_lr,
     "Random Forest": model_rf,
@@ -48,7 +48,7 @@ def index():
                 prob_phishing = model.predict_proba(arr)[0][1]
                 probs_for_avg.append(prob_phishing)
                 
-                # [UPDATE 2] Xu ly % theo chieu thuan
+                # Xu ly % theo chieu thuan
                 if prob_phishing > 0.5:
                     label = "Độc hại"
                     confidence = prob_phishing * 100

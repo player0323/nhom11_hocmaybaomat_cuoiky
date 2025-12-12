@@ -30,7 +30,7 @@ def get_realtime_domain_age(url):
             print(f"[DEBUG-AGE] Domain khong hop le: {full_domain}")
             return -1
         
-        # 2. Goi WHOIS (Co the cham)
+        # 2. Goi WHOIS 
         print(f"[DEBUG-AGE] Dang check WHOIS cho: {full_domain}...")
         try:
             w = whois.whois(full_domain)
@@ -38,7 +38,7 @@ def get_realtime_domain_age(url):
             print(f"[DEBUG-AGE] Loi ket noi WHOIS: {e}")
             return -1
 
-        # 3. Lay ngay tao (Creation Date)
+        # 3. Lay ngay tao 
         c_date = w.creation_date
         
         # Neu khong co ngay tao
@@ -46,7 +46,7 @@ def get_realtime_domain_age(url):
             print(f"[DEBUG-AGE] Khong tim thay creation_date cho {full_domain}")
             return -1
             
-        # 4. Xu ly dinh dang ngay (List hoac String hoac Datetime)
+        # 4. Xu ly dinh dang ngay 
         if isinstance(c_date, list): 
             c_date = c_date[0] # Lay ngay dau tien neu la list
             
@@ -98,7 +98,6 @@ def get_realtime_ssl_age(hostname):
 def extract_features_for_prediction(url):
     """
     Trich xuat vector 30 dac trung cho 1 URL bat ky.
-    Output phai khop 100% voi file extract_feature_csv.py
     """
     # Chuan hoa URL
     clean_url = str(url).strip().lower().replace("https://", "").replace("http://", "").replace("www.", "")
